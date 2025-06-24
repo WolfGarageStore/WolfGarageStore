@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Wolf Garage Store</title>
+<style>
+  /* (mantive todos estilos anteriores) */
+
+  body {
+    margin: 0; padding: 0; font-family: Arial, sans-serif;
+    background-color: #0a1f3d; color: white;
+  }
+  header {
+    text-align: center;
+    padding: 20px 10px 10px;
+  }
+  #logo {
+    max-width: 220px;
+    height: auto;
+  }
+  nav {
+    background-color: #122b51;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    padding: 12px 0;
+  }
+  nav a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.1em;
+    user-select: none;
+  }
+  nav a:hover {
+    color: #25d366;
+  }
+  #user-area {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    color: white;
+    cursor: pointer;
+    user-select: none;
+  }
+  #user-area span {
+    margin-left: 8px;
+    font-weight: bold;
+  }
+  main {
+    max-width: 1100px;
+    margin: 25px auto;
+    padding: 0 15px 40px;
+  }
+  #lista-produtos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill,minmax(220px,1fr));
+    gap: 25px;
+  }
+  .produto {
+    background-color: #122b51;
+    border-radius: 10px;
+    padding-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 0 6px #0a1f3d;
+    position: relative;
+    cursor: pointer;
+  }
+  .produto img {
+    width: 200px;
+    height: 130px;
+    border-radius: 10px 10px 0 0;
+    object-fit: cover;
+    margin-bottom: 6px;
+  }
+  .info {
+    background-color: white;
+    color: black;
+    border-radius: 6px;
+    width: 90%;
+    padding: 8px 12px;
+    text-align: center;
+    margin: 0 auto 8px;
+  }
+  .info h3 {
+    margin: 0;
+    font-size: 1.1em;
+  }
+  .info p {
+    margin: 6px 0 0;
+    font-size: 1em;
+    font-weight: bold;
+  }
+  .info .preco {
+    color: #25d366;
+    display: inline-block;
+  }
+  .info .und {
+    color: black;
+    font-weight: normal;
+    font-size: 0.9em;
+    margin-left: 4px;
+  }
+  .info .estoque {
+    color: #0033cc;
+    margin-top: 6px;
+    font-weight: bold;
+  }
+  button.reservar-btn {
+    background-color: #25d366;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: bold;
+    color: black;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.3s;
+  }
+  button.reservar-btn:hover:not(:disabled) {
+    background-color: #1eb859;
+  }
+  button.reservar-btn:disabled {
+    background-color: #777;
+    cursor: not-allowed;
+  }
+  .indisponivel-tag {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background-color: #f44336;
+    color: white;
+    padding: 4px 8px;
+    font-weight: bold;
+    border-radius: 6px;
+    font-size: 12px;
+    user-select: none;
+  }
+
+  /* Modal login/registro */
+  #modal-login {
+    display: none;
+    position: fixed;
+    top:0; left:0; width:100vw; height:100vh;
+    background-color: rgba(0,0,0,0.75);
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+  }
+  #modal-login.active {
+    display: flex;
+  }
+  #modal-login .content {
+    background: white;
+    color: black;
+    border-radius: 10px;
+    padding: 20px 30px;
+    max-width: 380px;
+    width: 90%;
+  }
+  #modal-login h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+  #modal-login label {
+    display: block;
+    margin: 8px 0 4px;
+  }
+  #modal-login input {
+    width: 100%;
+    padding: 8px;
+    font-size: 1em;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+  }
+  #modal-login button {
+    margin-top: 15px;
+    width: 100%;
+    background-color: #25d366;
+    border: none;
+    border-radius: 6px;
+    padding: 10px;
+    font-weight: bold;
+    color: black;
+    cursor: pointer;
+  }
+  #modal-login button:hover {
+    background-color: #1eb859;
+  }
+  #modal-login .switch-mode {
+    margin-top: 12px;
+    text-align: center;
+    font-size: 0.9em;
+    color: #122b51;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  /* Página detalhe produto */
+  #detalhe-produto {
+    max-width: 900px;
+    margin: 20px auto;
+    background-color: #122b51;
+    border-radius: 12px;
+    padding: 20px;
+    display: none;
+    color: white;
+  }
+  #detalhe-produto .imagens {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  #detalhe-produto .imagens img {
+    max-width: 200px;
+    max-height: 130px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.3s;
+  }
+  #detalhe-produto .imagens img.selecionada {
+    border-color: #25d366;
+  }
+  #detalhe-produto .imagem-principal {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  #detalhe-produto .imagem-principal img {
+    max-width: 400px;
+    max-height: 300px;
+    border-radius: 12px;
+    object-fit: contain;
+  }
+  #detalhe-produto .descricao {
+    background: white;
+    color: black;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    font-size: 1.1em;
+    min-height: 100px;
+  }
+  #detalhe-produto .info-basica {
+    color: #25d366;
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-bottom: 10px;
+  }
+  #detalhe-produto button {
+    background-color: #25d366;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-weight: bold;
+    color: black;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.3s;
+  }
+  #detalhe-produto button:hover:not(:disabled) {
+    background-color: #1eb859;
+  }
+  #detalhe-produto button:disabled {
+    background-color: #777;
+    cursor: not-allowed;
+  }
+  #detalhe-produto .voltar-btn {
+    margin-top: 25px;
+    background-color: #122b51;
+    border: 2px solid #25d366;
+    color: #25d366;
+  }
+  #detalhe-produto .voltar-btn:hover {
+    background-color: #25d366;
+    color: black;
+  }
+  #quantidade-reserva {
+    width: 60px;
+    margin-left: 12px;
+    font-weight: bold;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    text-align: center;
+    font-size: 1.1em;
+  }
+
+  /* Paginação */
+  #paginacao {
+    text-align: center;
+    margin: 20px 0;
+  }
+  #paginacao button {
+    background-color: #122b51;
+    border: 2px solid #25d366;
+    color: #25d366;
+    font-weight: bold;
+    padding: 8px 15px;
+    margin: 0 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  #paginacao button:hover:not(:disabled) {
+    background-color: #25d366;
+    color: black;
+  }
+  #paginacao button:disabled {
+    background-color: #777;
+    border-color: #777;
+    color: #ccc;
+    cursor: not-allowed;
+  }
+
+  /* Carrinho */
+  #carrinho {
+    max-width: 900px;
+    margin: 20px auto;
+    background-color: #122b51;
+    border-radius: 12px;
+    padding: 20px;
+    color: white;
+    display: none;
+  }
+  #carrinho h2 {
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 20px;
+  }
+  #carrinho table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  #carrinho table th, #carrinho table td {
+    border: 1px solid #25d366;
+    padding: 10px;
+    text-align: center;
+  }
+  #carrinho table th {
+    background-color: #25d366;
+    color: black;
+  }
+  #carrinho .total {
+    margin-top: 20px;
+    font-size: 1.3em;
+    font-weight: bold;
+    text-align: right;
+  }
+  #carrinho button {
+    background-color: #25d366;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-weight: bold;
+    color: black;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.3s;
+    margin-top: 20px;
+    display: block;
+    margin-left: auto;
+  }
+  #carrinho button:hover {
+    background-color: #1eb859;
+  }
+  #carrinho .voltar-btn {
+    background-color: #122b51;
+    border: 2px solid #25d366;
+    color: #25d366;
+    margin-top: 10px;
+    width: auto;
+  }
+  #carrinho .voltar-btn:hover {
+    background-color: #25d366;
+    color: black;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <img id="logo" src="img/logo.png" alt="Wolf Garage Store Logo" />
+</header>
+
+<nav>
+  <a href="#" id="nav-produtos">Escalas</a>
+  <a href="#" id="nav-modelos">Modelos</a>
+  <a href="#" id="nav-reservas">Reservas</a>
+  <a href="#" id="nav-compras">Compras</a>
+  <a href="#" id="nav-carrinho">Carrinho 🛒</a>
+</nav>
+
+<div id="user-area" title="Clique para entrar/registrar">
+  <span id="user-status">Entrar / Registrar</span>
+</div>
+
+<main>
+  <div id="lista-produtos"></div>
+  <div id="paginacao"></div>
+
+  <section id="detalhe-produto">
+    <div class="imagem-principal">
+      <img src="" alt="Imagem do Produto" id="imagem-principal" />
+    </div>
+    <div class="imagens"></div>
+    <div class="descricao"></div>
+    <div class="info-basica"></div>
+    <label for="quantidade-reserva">Quantidade:</label>
+    <input type="number" id="quantidade-reserva" min="1" value="1" />
+    <button id="btn-reservar-detalhe">Reservar</button>
+    <button class="voltar-btn" id="btn-voltar-lista">Voltar à lista</button>
+  </section>
+
+  <section id="carrinho">
+    <h2>Seu Carrinho de Reservas</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Produto</th>
+          <th>Quantidade</th>
+          <th>Preço Unitário</th>
+          <th>Subtotal</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-carrinho"></tbody>
+    </table>
+    <div class="total" id="total-carrinho"></div>
+    <button id="btn-finalizar-compra">Finalizar Compra (Simular Pagamento PIX)</button>
+    <button class="voltar-btn" id="btn-voltar-lista-carrinho">Voltar à lista</button>
+  </section>
+</main>
+
+<!-- Modal login/registro -->
+<div id="modal-login">
+  <div class="content">
+    <h2 id="modal-title">Login</h2>
+    <form id="form-login">
+      <label for="email">Email</label>
+      <input type="email" id="email" required autocomplete="username" />
+      <label for="senha">Senha</label>
+      <input type="password" id="senha" required autocomplete="current-password" />
+      <button type="submit">Entrar</button>
+    </form>
+    <form id="form-registro" style="display:none;">
+      <label for="nome">Nome Completo</label>
+      <input type="text" id="nome" required autocomplete="name" />
+      <label for="telefone">Telefone</label>
+      <input type="tel" id="telefone" required autocomplete="tel" />
+      <label for="email-reg">Email</label>
+      <input type="email" id="email-reg" required autocomplete="email" />
+      <label for="senha-reg">Senha</label>
+      <input type="password" id="senha-reg" required autocomplete="new-password" />
+      <button type="submit">Registrar</button>
+    </form>
+    <div class="switch-mode" id="switch-to-register">Não tem conta? Registrar aqui</div>
+    <div class="switch-mode" id="switch-to-login" style="display:none;">Já tem conta? Faça login</div>
+  </div>
+</div>
+
+<script>
+  const RESERVA_EXPIRACAO_MS = 2 * 24 * 60 * 60 * 1000; // 2 dias
+
+  // Array com 20 produtos (mesmo do código anterior)
+  const produtos = [
+    { id: "p1", nome: "R35 Amarelo", preco: 120, estoque: 5, imagens: ["img/r35-amarelo1.png","img/r35-amarelo2.png"], descricao: "Miniatura Nissan R35 Amarelo." },
+    { id: "p2", nome: "R35 Verde", preco: 130, estoque: 3, imagens: ["img/r35-verde1.png"], descricao: "Miniatura Nissan R35 Verde." },
+    { id: "p3", nome: "R35 Azul", preco: 115, estoque: 2, imagens: ["img/r35-azul1.png"], descricao: "Miniatura Nissan R35 Azul." },
+    { id: "p4", nome: "Chevette Vermelho", preco: 100, estoque: 7, imagens: ["img/chevette-vermelho1.png"], descricao: "Miniatura Chevette Vermelho." },
+    { id: "p5", nome: "Chevette Cinza", preco: 90, estoque: 6, imagens: ["img/chevette-cinza1.png"], descricao: "Miniatura Chevette Cinza." },
+    { id: "p6", nome: "Chevette Preto", preco: 90, estoque: 4, imagens: ["img/chevette-preto1.png"], descricao: "Miniatura Chevette Preto." },
+    { id: "p7", nome: "Chevette Azul", preco: 90, estoque: 8, imagens: ["img/chevette-azul1.png"], descricao: "Miniatura Chevette Azul." },
+    { id: "p8", nome: "Golf Preto", preco: 120, estoque: 10, imagens: ["img/golf-preto1.png"], descricao: "Miniatura Golf Preto." },
+    { id: "p9", nome: "Gol G3", preco: 95, estoque: 12, imagens: ["img/gol-g3-1.png"], descricao: "Miniatura Gol G3." },
+    { id: "p10", nome: "Palio Fire", preco: 80, estoque: 5, imagens: ["img/palio-fire1.png"], descricao: "Miniatura Palio Fire." },
+    { id: "p11", nome: "Uno Mille", preco: 70, estoque: 6, imagens: ["img/uno-mille1.png"], descricao: "Miniatura Uno Mille." },
+    { id: "p12", nome: "Fusca Verde", preco: 95, estoque: 3, imagens: ["img/fusca-verde1.png"], descricao: "Miniatura Fusca verde raro." },
+    { id: "p13", nome: "Corsa Classic", preco: 80, estoque: 9, imagens: ["img/corsa-classic1.png"], descricao: "Miniatura Corsa Classic." },
+    { id: "p14", nome: "Carro X", preco: 150, estoque: 2, imagens: ["img/carro-x1.png"], descricao: "Miniatura Carro X." },
+    { id: "p15", nome: "Carro Y", preco: 110, estoque: 4, imagens: ["img/carro-y1.png"], descricao: "Miniatura Carro Y." },
+    { id: "p16", nome: "Carro Z", preco: 90, estoque: 1, imagens: ["img/carro-z1.png"], descricao: "Miniatura Carro Z." },
+    { id: "p17", nome: "Modelo A", preco: 75, estoque: 6, imagens: ["img/modelo-a1.png"], descricao: "Miniatura Modelo A." },
+    { id: "p18", nome: "Modelo B", preco: 85, estoque: 7, imagens: ["img/modelo-b1.png"], descricao: "Miniatura Modelo B." },
+    { id: "p19", nome: "Modelo C", preco: 95, estoque: 5, imagens: ["img/modelo-c1.png"], descricao: "Miniatura Modelo C." },
+    { id: "p20", nome: "Modelo D", preco: 105, estoque: 8, imagens: ["img/modelo-d1.png"], descricao: "Miniatura Modelo D." }
+  ];
+
+  // Estado global
+  let usuarioLogado = null;
+  let paginaAtual = 1;
+  const produtosPorPagina = 10;
+  let produtoAtual = null;
+
+  // DOM elements
+  const listaProdutos = document.getElementById("lista-produtos");
+  const paginacaoDiv = document.getElementById("paginacao");
+  const detalheProdutoSection = document.getElementById("detalhe-produto");
+  const imagemPrincipal = document.getElementById("imagem-principal");
+  const imagensContainer = detalheProdutoSection.querySelector(".imagens");
+  const descricaoDiv = detalheProdutoSection.querySelector(".descricao");
+  const infoBasicaDiv = detalheProdutoSection.querySelector(".info-basica");
+  const quantidadeInput = document.getElementById("quantidade-reserva");
+  const btnReservarDetalhe = document.getElementById("btn-reservar-detalhe");
+  const btnVoltarLista = document.getElementById("btn-voltar-lista");
+  const userArea = document.getElementById("user-area");
+
+  // Carrinho DOM
+  const carrinhoSection = document.getElementById("carrinho");
+  const tbodyCarrinho = document.getElementById("tbody-carrinho");
+  const totalCarrinhoDiv = document.getElementById("total-carrinho");
+  const btnFinalizarCompra = document.getElementById("btn-finalizar-compra");
+  const btnVoltarListaCarrinho = document.getElementById("btn-voltar-lista-carrinho");
+
+  // Modal login elements
+  const modalLogin = document.getElementById("modal-login");
+  const formLogin = document.getElementById("form-login");
+  const formRegistro = document.getElementById("form-registro");
+  const switchToRegister = document.getElementById("switch-to-register");
+  const switchToLogin = document.getElementById("switch-to-login");
+  const userStatus = document.getElementById("user-status");
+
+  // Função para limpar reservas expiradas
+  function limparReservasExpiradas() {
+    let reservas = JSON.parse(localStorage.getItem("reservas") || "[]");
+    const agora = Date.now();
+    reservas = reservas.filter(r => {
+      const tempoReserva = new Date(r.dataReserva).getTime();
+      return (agora - tempoReserva < RESERVA_EXPIRACAO_MS) || r.confirmada === true;
+    });
+    localStorage.setItem("reservas", JSON.stringify(reservas));
+  }
+
+  // Calcula quantidade reservada atual (não confirmada) para um produto
+  function quantidadeReservada(produtoId) {
+    limparReservasExpiradas();
+    let reservas = JSON.parse(localStorage.getItem("reservas") || "[]");
+    return reservas.reduce((acc, r) => {
+      if (r.produtoId === produtoId && !r.confirmada) {
+        return acc + r.quantidade;
+      }
+      return acc;
+    }, 0);
+  }
+
+  // Verifica se o produto está indisponível (estoque zerado)
+  function produtoIndisponivel(produtoId) {
+    const produto = produtos.find(p => p.id === produtoId);
+    if (!produto) return true;
+    const reservado = quantidadeReservada(produtoId);
+    return (produto.estoque - reservado) <= 0;
+  }
+
+  // Monta a lista de produtos para a página atual
+  function montarListaProdutos() {
+    listaProdutos.innerHTML = "";
+    limparReservasExpiradas();
+
+    const inicio = (paginaAtual - 1) * produtosPorPagina;
+    const fim = inicio + produtosPorPagina;
+    const produtosPagina = produtos.slice(inicio, fim);
+
+    produtosPagina.forEach(produto => {
+      const reservado = quantidadeReservada(produto.id);
+      const estoqueDisponivel = produto.estoque - reservado;
+      const indisponivel = estoqueDisponivel <= 0;
+
+      const a = document.createElement("a");
+      a.className = "produto";
+      a.href = "#";
+      a.dataset.id = produto.id;
+
+      if (indisponivel) {
+        const tagIndisp = document.createElement("div");
+        tagIndisp.className = "indisponivel-tag";
+        tagIndisp.textContent = "Reservado";
+        a.appendChild(tagIndisp);
+      }
+
+      a.innerHTML += `
+        <img src="${produto.imagens[0]}" alt="${produto.nome}" />
+        <div class="info">
+          <h3>${produto.nome}</h3>
+          <p><span class="preco">R$ ${produto.preco.toFixed(2)}</span><span class="und"> und</span></p>
+          <p class="estoque">Estoque: ${estoqueDisponivel}</p>
+        </div>
+      `;
+
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (!indisponivel) {
+          mostrarDetalhe(produto.id);
+        }
+      });
+
+      listaProdutos.appendChild(a);
+    });
+
+    montarPaginacao();
+    detalheProdutoSection.style.display = "none";
+    carrinhoSection.style.display = "none";
+    listaProdutos.style.display = "grid";
+  }
+
+  // Monta os botões de paginação
+  function montarPaginacao() {
+    paginacaoDiv.innerHTML = "";
+    const totalPaginas = Math.ceil(produtos.length / produtosPorPagina);
+
+    for (let i = 1; i <= totalPaginas; i++) {
+      const btn = document.createElement("button");
+      btn.textContent = i;
+      if (i === paginaAtual) {
+        btn.disabled = true;
+      }
+      btn.addEventListener("click", () => {
+        paginaAtual = i;
+        montarListaProdutos();
+      });
+      paginacaoDiv.appendChild(btn);
+    }
+  }
+
+  // Mostrar detalhes do produto
+  function mostrarDetalhe(id) {
+    limparReservasExpiradas();
+    const produto = produtos.find(p => p.id === id);
+    if (!produto) return;
+
+    produtoAtual = produto;
+    const reservado = quantidadeReservada(id);
+    const estoqueDisponivel = produto.estoque - reservado;
+
+    imagemPrincipal.src = produto.imagens[0];
+    imagensContainer.innerHTML = "";
+    produto.imagens.forEach((imgSrc, idx) => {
+      const img = document.createElement("img");
+      img.src = imgSrc;
+      img.alt = `${produto.nome} imagem ${idx + 1}`;
+      if(idx === 0) img.classList.add("selecionada");
+      img.addEventListener("click", () => {
+        imagensContainer.querySelectorAll("img").forEach(i => i.classList.remove("selecionada"));
+        img.classList.add("selecionada");
+        imagemPrincipal.src = imgSrc;
+      });
+      imagensContainer.appendChild(img);
+    });
+
+    descricaoDiv.textContent = produto.descricao;
+    infoBasicaDiv.textContent = `Preço: R$ ${produto.preco.toFixed(2)} | Estoque disponível: ${estoqueDisponivel} unidade${estoqueDisponivel !== 1 ? "s" : ""}`;
+
+    quantidadeInput.max = estoqueDisponivel;
+    quantidadeInput.value = estoqueDisponivel > 0 ? 1 : 0;
+    quantidadeInput.disabled = estoqueDisponivel === 0;
+    btnReservarDetalhe.disabled = estoqueDisponivel === 0;
+
+    listaProdutos.style.display = "none";
+    carrinhoSection.style.display = "none";
+    detalheProdutoSection.style.display = "block";
+  }
+
+  // Reservar produto
+  function reservarProduto() {
+    if (!usuarioLogado) {
+      alert("Você precisa estar logado para fazer uma reserva.");
+      abrirModalLogin();
+      return;
+    }
+    if (!produtoAtual) return;
+
+    const quantidade = Number(quantidadeInput.value);
+    if (quantidade <= 0 || isNaN(quantidade)) {
+      alert("Informe uma quantidade válida para reservar.");
+      return;
+    }
+
+    limparReservasExpiradas();
+
+    const reservado = quantidadeReservada(produtoAtual.id);
+    const estoqueDisponivel = produtoAtual.estoque - reservado;
+
+    if (quantidade > estoqueDisponivel) {
+      alert(`Quantidade indisponível. Estoque disponível: ${estoqueDisponivel}`);
+      return;
+    }
+
+    let reservas = JSON.parse(localStorage.getItem("reservas") || "[]");
+
+    const reservaExistenteIndex = reservas.findIndex(r => r.produtoId === produtoAtual.id && r.usuarioEmail === usuarioLogado.email && !r.confirmada);
+
+    const agoraISO = new Date().toISOString();
+
+    if (reservaExistenteIndex >= 0) {
+      reservas[reservaExistenteIndex].quantidade += quantidade;
+      reservas[reservaExistenteIndex].dataReserva = agoraISO;
+    } else {
+      reservas.push({
+        produtoId: produtoAtual.id,
+        usuarioEmail: usuarioLogado.email,
+        quantidade: quantidade,
+        dataReserva: agoraISO,
+        confirmada: false
+      });
+    }
+
+    localStorage.setItem("reservas", JSON.stringify(reservas));
+    alert(`Reserva de ${quantidade} unidade${quantidade !== 1 ? "s" : ""} do produto "${produtoAtual.nome}" realizada com sucesso!`);
+
+    mostrarDetalhe(produtoAtual.id);
+    montarListaProdutos();
+  }
+
+  btnReservarDetalhe.addEventListener("click", reservarProduto);
+
+  btnVoltarLista.addEventListener("click", () => {
+    detalheProdutoSection.style.display = "none";
+    carrinhoSection.style.display = "none";
+    listaProdutos.style.display = "grid";
+  });
+
+  // Mostrar carrinho do usuário
+  function mostrarCarrinho() {
+    if (!usuarioLogado) {
+      alert("Você precisa estar logado para acessar o carrinho.");
+      abrirModalLogin();
+      return;
+    }
+
+    limparReservasExpiradas();
+
+    let reservas = JSON.parse(localStorage.getItem("reservas") || "[]");
+    reservas = reservas.filter(r => r.usuarioEmail === usuarioLogado.email && !r.confirmada);
+
+    if (reservas.length === 0) {
+      alert("Seu carrinho está vazio.");
+      return;
+    }
+
+    tbodyCarrinho.innerHTML = "";
+    let total = 0;
+
+    reservas.forEach(r => {
+      const produto = produtos.find(p => p.id === r.produtoId);
+      if (!produto) return;
+
+      const subtotal = produto.preco * r.quantidade;
+      total += subtotal;
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${produto.nome}</td>
+        <td>${r.quantidade}</td>
+        <td>R$ ${produto.preco.toFixed(2)}</td>
+        <td>R$ ${subtotal.toFixed(2)}</td>
+        <td><button data-produto-id="${produto.id}" class="btn-remover">Remover</button></td>
+      `;
+      tbodyCarrinho.appendChild(tr);
+    });
+
+    totalCarrinhoDiv.textContent = `Total: R$ ${total.toFixed(2)}`;
+
+    carrinhoSection.style.display = "block";
+    detalheProdutoSection.style.display = "none";
+    listaProdutos.style.display = "none";
+
+    // Adicionar evento remover nos botões
+    document.querySelectorAll(".btn-remover").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const idProduto = e.target.dataset.produtoId;
+        removerReserva(idProduto);
+      });
+    });
+  }
+
+  // Remover reserva do carrinho
+  function removerReserva(idProduto) {
+    let reservas = JSON.parse(localStorage.getItem("reservas") || "[]");
+    reservas = reservas.filter(r => !(r.produtoId === idProduto && r.usuarioEmail === usuarioLogado.email && !r.confirmada));
+    localStorage.setItem("reservas", JSON.stringify(reservas));
+    alert("Reserva removida do carrinho.");
+    mostrarCarrinho();
+    montarListaProdutos();
+  }
+
+  // Finalizar compra - marca reservas como confirmadas
+  btnFinalizarCompra.addEventListener("click", () => {
+    let reservas = JSON.parse(localStorage.getItem("reservas") || "[]");
+    let alterado = false;
+    reservas.forEach(r => {
+      if (r.usuarioEmail === usuarioLogado.email && !r.confirmada) {
+        r.confirmada = true;
+        alterado = true;
+      }
+    });
+    if (!alterado) {
+      alert("Não há reservas para finalizar.");
+      return;
+    }
+    localStorage.setItem("reservas", JSON.stringify(reservas));
+    alert("Compra finalizada com sucesso! Obrigado pelo pagamento via PIX.");
+    montarListaProdutos();
+    mostrarListaProdutos();
+  });
+
+  btnVoltarListaCarrinho.addEventListener("click", () => {
+    mostrarListaProdutos();
+  });
+
+  // Mostrar lista produtos
+  function mostrarListaProdutos() {
+    carrinhoSection.style.display = "none";
+    detalheProdutoSection.style.display = "none";
+    listaProdutos.style.display = "grid";
+  }
+
+  // Login / Registro
+  function abrirModalLogin() {
+    modalLogin.classList.add("active");
+    formLogin.style.display = "block";
+    formRegistro.style.display = "none";
+    switchToRegister.style.display = "block";
+    switchToLogin.style.display = "none";
+  }
+  function fecharModalLogin() {
+    modalLogin.classList.remove("active");
+    limparCamposLoginRegistro();
+  }
+  function limparCamposLoginRegistro() {
+    formLogin.reset();
+    formRegistro.reset();
+  }
+  switchToRegister.addEventListener("click", () => {
+    formLogin.style.display = "none";
+    formRegistro.style.display = "block";
+    switchToRegister.style.display = "none";
+    switchToLogin.style.display = "block";
+  });
+  switchToLogin.addEventListener("click", () => {
+    formLogin.style.display = "block";
+    formRegistro.style.display = "none";
+    switchToRegister.style.display = "block";
+    switchToLogin.style.display = "none";
+  });
+
+  // Formulário login
+  formLogin.addEventListener("submit", e => {
+    e.preventDefault();
+    const email = formLogin.email.value.trim().toLowerCase();
+    const senha = formLogin.senha.value.trim();
+    const usuarios = JSON.parse(localStorage.getItem("usuarios") || "[]");
+    const usuario = usuarios.find(u => u.email === email && u.senha === senha);
+    if (!usuario) {
+      alert("Email ou senha incorretos.");
+      return;
+    }
+    usuarioLogado = usuario;
+    userStatus.textContent = usuario.nome;
+    fecharModalLogin();
+    montarListaProdutos();
+  });
+
+  // Formulário registro
+  formRegistro.addEventListener("submit", e => {
+    e.preventDefault();
+    const nome = formRegistro.nome.value.trim();
+    const telefone = formRegistro.telefone.value.trim();
+    const email = formRegistro["email-reg"].value.trim().toLowerCase();
+    const senha = formRegistro["senha-reg"].value.trim();
+
+    if (!nome || !telefone || !email || !senha) {
+      alert("Preencha todos os campos.");
+      return;
+    }
+    let usuarios = JSON.parse(localStorage.getItem("usuarios") || "[]");
+    if (usuarios.some(u => u.email === email)) {
+      alert("Email já cadastrado.");
+      return;
+    }
+    const novoUsuario = { nome, telefone, email, senha };
+    usuarios.push(novoUsuario);
+    localStorage.setItem("usuarios", JSON.stringify(usuarios));
+    alert("Cadastro realizado com sucesso! Faça login agora.");
+    switchToLogin.click();
+  });
+
+  userArea.addEventListener("click", () => {
+    if (!usuarioLogado) {
+      abrirModalLogin();
+    } else {
+      if (confirm("Deseja sair da sua conta?")) {
+        usuarioLogado = null;
+        userStatus.textContent = "Entrar / Registrar";
+        montarListaProdutos();
+      }
+    }
+  });
+
+  // Navegação menu
+  document.getElementById("nav-produtos").addEventListener("click", e => {
+    e.preventDefault();
+    paginaAtual = 1;
+    montarListaProdutos();
+  });
+  document.getElementById("nav-carrinho").addEventListener("click", e => {
+    e.preventDefault();
+    mostrarCarrinho();
+  });
+
+  // Inicialização
+  montarListaProdutos();
+</script>
+
+</body>
+</html>
+
